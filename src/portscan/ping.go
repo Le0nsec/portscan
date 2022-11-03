@@ -1,14 +1,15 @@
-package main
+package portscan
 
 import (
 	"fmt"
 	"net"
 	"os"
+	. "portscan/config"
 	"time"
 )
 
 func pingList(list []string) []string {
-	openHostList = []string{}
+	OpenHostList = []string{}
 	fmt.Println("\nhost discovering...")
 	for _, host := range list {
 		//ch <- true
@@ -17,7 +18,7 @@ func pingList(list []string) []string {
 		ping(host)
 	}
 	//wg.Wait()
-	return openHostList
+	return OpenHostList
 }
 
 func ping(host string) {
@@ -61,7 +62,7 @@ func ping(host string) {
 		//fmt.Println("Got response")
 		if msg[20+5] == 13 && msg[20+7] == 37 && msg[20+8] == 99 {
 			fmt.Printf("%s open\n", ljust(host, 21))
-			openHostList = append(openHostList, host)
+			OpenHostList = append(OpenHostList, host)
 			//<-ch
 			//wg.Done()
 			return

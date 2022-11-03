@@ -1,10 +1,10 @@
-package main
+package portscan
 
 var headers = map[string]string{
 	"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36",
 }
 
-type arrayFlags []string
+type ArrayFlags []string
 
 type HttpInfo struct {
 	StatusCode int    `json:"status_code"`
@@ -134,11 +134,11 @@ func saveResult([]HttpInfo) {
 
 }
 */
-func (i *arrayFlags) String() string {
+func (i *ArrayFlags) String() string {
 	return "my string representation"
 }
 
-func (i *arrayFlags) Set(value string) error {
+func (i *ArrayFlags) Set(value string) error {
 	*i = append(*i, value)
 	return nil
 }

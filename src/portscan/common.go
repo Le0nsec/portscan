@@ -1,8 +1,9 @@
-package main
+package portscan
 
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"math"
 	"net"
 	"os"
@@ -19,7 +20,7 @@ type IPList struct {
 	D []int
 }
 
-var cidrIPList IPList
+var CidrIPList IPList
 
 func ParsePort(portString string) ([]int, error) {
 
@@ -58,34 +59,34 @@ func ParseIP(ipString string) ([]string, error) {
 		} else if ip, network, err := net.ParseCIDR(item); err == nil {
 			n, _ := network.Mask.Size()
 			ipSub := strings.Split(ip.Mask(network.Mask).String(), ".")
-			cidrIPList.A, _ = strconv.Atoi(ipSub[0])
+			CidrIPList.A, _ = strconv.Atoi(ipSub[0])
 
 			if n >= 24 {
 				a, _ := strconv.Atoi(ipSub[1])
-				cidrIPList.B = append(cidrIPList.B, a)
+				CidrIPList.B = append(CidrIPList.B, a)
 				a, _ = strconv.Atoi(ipSub[2])
-				cidrIPList.C = append(cidrIPList.C, a)
+				CidrIPList.C = append(CidrIPList.C, a)
 				for i := 1; i < IPRange(n, 32); i++ {
-					cidrIPList.D = append(cidrIPList.D, i)
+					CidrIPList.D = append(CidrIPList.D, i)
 				}
 			} else if n >= 16 && n < 24 {
 				a, _ := strconv.Atoi(ipSub[1])
-				cidrIPList.B = append(cidrIPList.B, a)
+				CidrIPList.B = append(CidrIPList.B, a)
 				for i := 0; i < IPRange(n, 24); i++ {
-					cidrIPList.C = append(cidrIPList.C, i)
+					CidrIPList.C = append(CidrIPList.C, i)
 				}
 				for i := 1; i < 256; i++ {
-					cidrIPList.D = append(cidrIPList.D, i)
+					CidrIPList.D = append(CidrIPList.D, i)
 				}
 			} else if n >= 8 && n < 16 {
 				for i := 0; i < IPRange(n, 16); i++ {
-					cidrIPList.B = append(cidrIPList.B, i)
+					CidrIPList.B = append(CidrIPList.B, i)
 				}
 				for i := 0; i < 256; i++ {
-					cidrIPList.C = append(cidrIPList.C, i)
+					CidrIPList.C = append(CidrIPList.C, i)
 				}
 				for i := 1; i < 256; i++ {
-					cidrIPList.D = append(cidrIPList.D, i)
+					CidrIPList.D = append(CidrIPList.D, i)
 				}
 			} else {
 				return ipList, fmt.Errorf("%s is not supported", item)
@@ -223,10 +224,9 @@ func ReadFileLines(path string) ([]string, error) {
 	return lines, scanner.Err()
 }
 
-func checkError(err error) {
+func CheckError(err error) {
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Fatal error: %s\n", err.Error())
-		os.Exit(1)
+		log.Println("check err:", err)
 	}
 }
 
