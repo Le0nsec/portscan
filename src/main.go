@@ -1,9 +1,14 @@
 package main
 
 import (
+	"embed"
 	"flag"
 	"fmt"
+	"io/fs"
+	"log"
+	"net/http"
 	"os"
+	"path/filepath"
 	"portscan/api"
 	. "portscan/config"
 	"portscan/database"
@@ -12,6 +17,16 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+)
+
+//go:embed dist
+var themesFS embed.FS
+
+var (
+	themesPath = "dist"
+	assetsPath = filepath.Join(themesPath, "assets")
+	iconPath   = filepath.Join(themesPath, "favicon.ico")
+	indexPath  = filepath.Join(themesPath, "index.html")
 )
 
 func main() {
@@ -51,6 +66,18 @@ func main() {
 		defer database.DB.Close()
 		r := gin.Default()
 		api.RouterInit(r)
+
+		// static
+		staticAssets, err := fs.Sub(themesFS, assetsPath)
+		if err != nil {
+			log.Fatalf("embed error: %s", err.Error())
+		}
+
+		// static router
+		r.StaticFS("/assets", http.FS(staticAssets))
+		r.GET("/", showIndexHtml)
+		r.GET("/favicon.ico", showFavicon)
+		r.GET("/scan/*type", showIndexHtml)
 
 		fmt.Printf("[+] Server start at %s\n", HostPort)
 		if err := r.Run(HostPort); err != nil {
@@ -109,4 +136,24 @@ func main() {
 		*/
 	}
 
+}
+
+func showIndexHtml(c *gin.Context) {
+	c.Writer.WriteHeader(http.StatusOK)
+	indexHTML, err := themesFS.ReadFile(indexPath)
+	if err != nil {
+		fmt.Printf("[!] read index.html error: %s\n", err.Error())
+	}
+	c.Writer.Write(indexHTML)
+	c.Writer.Flush()
+}
+
+func showFavicon(c *gin.Context) {
+	c.Writer.WriteHeader(http.StatusOK)
+	indexHTML, err := themesFS.ReadFile(iconPath)
+	if err != nil {
+		fmt.Printf("[!] read favicon.ico error: %s\n", err.Error())
+	}
+	c.Writer.Write(indexHTML)
+	c.Writer.Flush()
 }
